@@ -1,0 +1,69 @@
+# Node.js
+node_modules/
+npm-debug.log
+yarn-error.log
+.pnpm-debug.log
+
+# TypeScript
+dist/
+*.js
+*.js.map
+*.d.ts
+
+# Environment variables
+.env
+.env.local
+.env.development
+.env.test
+
+# IDE specific
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Dependency directories
+jspm_packages/
+
+# Optional npm cache directory
+.npm
+
+# Optional eslint cache
+.eslintcache
+
+# Output of 'npm pack'
+*.tgz
+
+# Debug logs
+debug.log
+
+# Server logs
+server.log
+
+# MacOS
+.DS_Store
+
+# Editors
+*.swp
+*~
+.idea
+
+# Python virtual environment
+my_venv/
+
+# Build directories
+build/
+out/
+
+# Test coverage
+coverage/
+.nyc_output/
+
+# Package lock files
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
+# Temporary files
+tmp/
+temp/
