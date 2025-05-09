@@ -22,6 +22,7 @@ const server = new McpServer({ name: "file-server", version: "1.0.0" });
 
 server.tool(
   "diffcalculia",
+  "This tool allows you to edit files. Give it a file path and a unified diff and it will edit the file for you.",
   { diff: z.string(), path: z.string() },
   async ({ diff, path }) => {
     const newContents = await applyDiffCalculia(diff, path);
