@@ -16,7 +16,7 @@ npm install @modelcontextprotocol/sdk zod
 
 Start the server:
 ```bash
-node mcp-file-server.ts
+npm run dev
 ```
 
 The server will start on port 3000.

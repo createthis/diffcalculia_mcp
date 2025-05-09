@@ -1,68 +1,30 @@
-import { Server } from 'http';
-import request from 'supertest';
-import fs from 'fs/promises';
-import path from 'path';
-import { createMcpServer } from '../mcp-file-server';
+// tests/mcp-file-server.test.ts
+import { applyDiffCalculia } from "../mcp-file-server";
+import { promises as fs } from "fs";
+import path from "path";
 
-describe('MCP File Server', () => {
-  let server: Server;
+describe("applyDiffCalculia", () => {
+  const FIX = path.resolve(__dirname, "fixtures");
+  const ORIG = path.join(FIX, "original.txt");
+  const DIFF = path.join(FIX, "change.diff");
+  const EXPECT = path.join(FIX, "expected.txt");
+  const OUT = path.join(FIX, "out.txt");
 
-  beforeAll(async () => {
-    server = await createMcpServer();
-    await fs.mkdir(path.join(process.cwd(), 'sandbox'), { recursive: true });
+  beforeEach(async () => {
+    // reset out file with original before each test
+    const base = await fs.readFile(path.join(FIX, "original.txt"), "utf8");
+    await fs.writeFile(OUT, base, "utf8");
   });
 
-  afterAll(async () => {
-    await server.close();
+  it("applies a well-formed diff", async () => {
+    const patch = await fs.readFile(DIFF, "utf8");
+    const out = await applyDiffCalculia(patch, OUT);
+    const exp = await fs.readFile(EXPECT, "utf8");
+    expect(out).toBe(exp);
+    expect(await fs.readFile(OUT, "utf8")).toBe(exp);
   });
 
-  test('applies diff via MCP endpoint', async () => {
-    const testFile = 'test-file.txt';
-    const filePath = path.join('sandbox', testFile);
-    await fs.writeFile(filePath, 'Initial content\nline 2\nline 3');
-
-    const requestBody = {
-      jsonrpc: '2.0',
-      method: 'file.edit',
-      id: 1,
-      params: {
-        path: testFile,
-        diff: `--- ${testFile}
-+++ ${testFile}
-@@ -1,3 +1,4 @@
- Initial content
-+New inserted line
- line 2
- line 3`
-      }
-    };
-
-    console.log('Sending request:', JSON.stringify(requestBody, null, 2));
-    const response = await request(server)
-      .post('/')
-      .set('Content-Type', 'application/json')
-      .set('Accept', 'application/json, text/event-stream')
-      .send(requestBody);
-
-    console.log('Response status:', response.status);
-    console.log('Response body:', response.body);
-
-    if (response.status !== 200) {
-      console.log('Error details:', {
-        status: response.status,
-        text: response.text,
-        headers: response.headers
-      });
-    }
-
-    expect(response.status).toBe(200);
-    expect(response.body).toEqual({
-      jsonrpc: '2.0',
-      id: 1,
-      result: { status: "success" }
-    });
-
-    const updatedContent = await fs.readFile(filePath, 'utf-8');
-    expect(updatedContent).toBe('Initial content\nNew inserted line\nline 2\nline 3');
+  it("throws on malformed diff", async () => {
+    await expect(applyDiffCalculia("not a diff", OUT)).rejects.toThrow();
   });
 });

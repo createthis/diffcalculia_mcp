@@ -1,3 +1,6 @@
+# tests
+tests/fixtures/out.txt
+
 # Node.js
 node_modules/
 
