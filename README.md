@@ -1,6 +1,7 @@
 # diffcalculia MCP server
 
 A Model Context Protocol (MCP) server is a server AIs can use to extend their capabilities.
+You can read about them here: https://modelcontextprotocol.io/
 
 This particular server is written in Typescript and provides a tool the AI can use to edit
 local files by passing a path and a diff in unified diff format. It uses https://github.com/createthis/diffcalculia-ts
