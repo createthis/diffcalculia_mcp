@@ -1,95 +1,67 @@
-import { McpServer, ResourceTemplate } from "@modelcontextprotocol/sdk/server/mcp.js";
+import { McpServer, ReadResourceCallback } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
-import { z } from "zod";
-import path from "path";
-import http from "http";
-import { applyPatch } from "diffcalculia-ts";
-import fs from "fs";
+import * as http from "http";
 
-const SANDBOX_DIR = path.resolve('/workspace/sandbox');
-const server = new McpServer({
-  name: "Sandboxed File Editor",
-  version: "1.0.0"
-}) as McpServer & {
-  registerResource: (resource: {
-    name: string;
-    actions: Record<string, any>;
-  }) => void;
-};
+async function main() {
+  try {
+    console.log("Initializing transport...");
+    const transport = new StreamableHTTPServerTransport({
+      sessionIdGenerator: () => Math.random().toString(36).substring(2)
+    });
+    console.log("Transport initialized:", !!transport);
 
-// Ensure sandbox directory exists
-fs.mkdirSync(SANDBOX_DIR, { recursive: true });
+    console.log("Creating MCP server...");
+    const server = new McpServer({
+      name: "File Editor",
+      version: "1.0.0",
+      transport
+    });
+    console.log("Server created:", !!server);
 
-const FileEditRequest = z.object({
-  path: z.string().regex(/^[a-zA-Z0-9_\-./]+$/),
-  diff: z.string()
-});
+    console.log("Registering test endpoint...");
+    const testCallback: ReadResourceCallback = async (params, context) => {
+      console.log("Test endpoint called with params:", params);
+      return {
+        contents: [{
+          uri: "test-endpoint",
+          text: "Server is working",
+          mimeType: "text/plain"
+        }],
+        _meta: { status: "success" }
+      };
+    };
+    server.resource("test", "/test", testCallback);
 
-function validatePath(userPath: string): string {
-  const requestedPath = path.normalize(userPath);
-  const absolutePath = path.join(SANDBOX_DIR, requestedPath);
+    const httpServer = http.createServer(async (req, res) => {
+      console.log(`\nIncoming request: ${req.method} ${req.url}`);
+      try {
+        if (req.url === '/direct-test') {
+          res.end(JSON.stringify({ success: true }));
+          return;
+        }
+        await transport.handleRequest(req, res);
+      } catch (err) {
+        console.error("Request failed:", err);
+        res.statusCode = 500;
+        res.end(JSON.stringify({
+          jsonrpc: "2.0",
+          error: {
+            code: -32603,
+            message: "Internal error"
+          }
+        }));
+      }
+    });
 
-  if (!absolutePath.startsWith(SANDBOX_DIR)) {
-    throw new Error("Path traversal attempt detected");
+    const PORT = 3003;
+    console.log(`Starting server on port ${PORT}`); // Added debug logging
+    httpServer.listen(PORT, () => {
+      console.log(`Server running on port ${PORT}`);
+    });
+  } catch (err) {
+    console.error("Initialization failed:", err);
+    process.exit(1);
   }
-
-  return absolutePath;
 }
 
-server.registerResource({
-  name: "file",
-  actions: {
-    edit: {
-      request: FileEditRequest,
-      handler: async (req: { path: string; diff: string }) => {
-        try {
-          const absolutePath = validatePath(req.path);
-
-          try {
-            await fs.promises.access(absolutePath, fs.constants.W_OK);
-          } catch (err) {
-            return {
-              status: "error",
-              message: "File not found or not writable",
-              details: `Path must be within sandbox (${SANDBOX_DIR})`
-            };
-          }
-
-          try {
-            const fileContent = await fs.promises.readFile(absolutePath, 'utf-8');
-            const patchedContent = applyPatch(fileContent, req.diff);
-            await fs.promises.writeFile(absolutePath, patchedContent);
-            return { status: "success" };
-          } catch (err: any) {
-            console.error("Patch failed:", err);
-            return {
-              status: "error",
-              message: "Invalid diff or patch failed",
-              details: err.message
-            };
-          }
-        } catch (err: any) {
-          return {
-            status: "error",
-            message: "Invalid path",
-            details: err.message
-          };
-        }
-      }
-    }
-  }
-});
-
-const transport = new StreamableHTTPServerTransport(server);
-
-// Configure session ID generation if needed
-transport.sessionIdGenerator = () => Math.random().toString(36).substring(2);
-
-const httpServer = http.createServer((req, res) => {
-  transport.handleRequest(req, res);
-});
-
-httpServer.listen(3000, () => {
-  console.log(`Sandboxed MCP File Server running on port 3000`);
-  console.log(`Sandbox directory: ${SANDBOX_DIR}`);
-});
+main();
