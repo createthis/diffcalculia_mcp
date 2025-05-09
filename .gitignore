@@ -1,5 +1,6 @@
 # tests
 tests/fixtures/out.txt
+tests/fixtures/out-e2e.txt
 
 # Node.js
 node_modules/
