@@ -40,7 +40,7 @@ docker run -it --rm \
   -p 3002:3002 \
   -v $WORKSPACE_BASE:/workspace \
   -e SANDBOX_USER_ID=$(id -u) \
-  diffcalculia-server
+  diffcalculia-mcp
 ```
 
 # Running the server without docker (Not recommended! Dangerous!)
