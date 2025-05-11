@@ -1,6 +1,6 @@
 import { promises as fs } from "fs";
 import path from "path";
-import { readFileWithLines } from "../mcp-file-server";
+import { readFileWithLines } from "../diffcalculia-mcp";
 
 describe("readFileWithLines", () => {
   const FIXTURES = path.resolve(__dirname, "fixtures");

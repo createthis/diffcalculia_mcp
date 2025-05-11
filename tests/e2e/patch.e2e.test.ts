@@ -1,18 +1,17 @@
-// tests/e2e/mcp-file-server.e2e.ts
 import path from "path";
 import { promises as fs } from "fs";
 import { ChildProcess, spawn } from "child_process";
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { StreamableHTTPClientTransport } from "@modelcontextprotocol/sdk/client/streamableHttp.js";
 
-describe("mcp-file-server e2e", () => {
+describe("patch e2e", () => {
   let client: Client;
   let serverProcess: ChildProcess;
   const FIX = path.resolve(__dirname, path.join("..", "fixtures"));
   const OUT = path.join(FIX, "out-e2e.txt");
 
   beforeAll(async () => {
-    const serverScript = path.resolve(__dirname, "../../mcp-file-server.ts");
+    const serverScript = path.resolve(__dirname, path.join("..", "..", "diffcalculia-mcp.ts"));
     serverProcess = spawn("node", ["--import", "tsx/esm", serverScript]);
 
     // Wait for server to be ready

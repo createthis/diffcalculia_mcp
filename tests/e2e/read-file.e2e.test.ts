@@ -7,7 +7,7 @@ import { ChildProcess, spawn } from "child_process";
 describe("read_file tool (e2e)", () => {
   const TEST_PORT = 3002;
   const TEST_URL = `http://localhost:${TEST_PORT}/mcp`;
-  const FIXTURES = path.resolve(__dirname, "../fixtures");
+  const FIXTURES = path.resolve(__dirname, path.join("..", "fixtures"));
   const SAMPLE_FILE = path.join(FIXTURES, "sample.txt");
   
   let client: Client;
@@ -15,7 +15,7 @@ describe("read_file tool (e2e)", () => {
 
   beforeAll(async () => {
     // Start server
-    const serverScript = path.resolve(__dirname, "../../mcp-file-server.ts");
+    const serverScript = path.resolve(__dirname, path.join("..", "..", "diffcalculia-mcp.ts"));
     serverProcess = spawn("node", ["--import", "tsx/esm", serverScript]);
 
     // Wait for server to be ready

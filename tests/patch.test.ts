@@ -1,5 +1,4 @@
-// tests/mcp-file-server.test.ts
-import { patch } from "../mcp-file-server";
+import { patch } from "../diffcalculia-mcp";
 import { promises as fs } from "fs";
 import path from "path";
 
