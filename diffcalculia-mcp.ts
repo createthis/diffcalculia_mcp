@@ -74,7 +74,9 @@ const server = new McpServer({
 server.tool(
   "patch",
   `This tool allows you to edit files. Give it a file path and a unified diff and it will edit the file for you.
-The output is the diff that was applied. If the diff was modified, it will contain "Let me fix that for you".`,
+The output of this tool is the diff that was applied. If the diff was modified, it will contain "Let me fix that for you".
+This is your preferred file editing tool because it works well with long files and files that contain duplicate lines.
+The context feature of the unified diff format prevents unintentional changes and allows precision edits.`,
   { diff: z.string(), path: z.string() },
   async ({ diff, path }) => {
     const newContents = await patch(diff, path);
