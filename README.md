@@ -11,11 +11,8 @@ internally to fix diffs before applying them using https://github.com/kpdecker/j
 point and is subject to change. IT WILL PROBABLY OVERWRITE YOUR FILESYSTEM AND BREAK YOUR
 MACHINE. Seriously. DO NOT USE. Very very unsafe.**
 
-This server is currently implemented using the STDIO transport layer, so there's no port.
-I vibe coded it, so I don't completely understand it, but my limited understanding is that
-it is basically a CLI command that implements a bidirectional IO stream.
+This server is currently implemented using the StreamableHttp tranport layer. It starts on port 3002.
 
-I'll probably add SSE (HTTP) at some point in the near future. This is under active development.
 
 # Installation
 
@@ -32,6 +29,9 @@ npm run dev
 ```
 
 # Tests
+
+First, make sure the server isn't running. Then:
+
 ```bash
 npm test
 ```
