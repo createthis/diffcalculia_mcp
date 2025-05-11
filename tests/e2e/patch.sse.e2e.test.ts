@@ -2,7 +2,7 @@ import path from "path";
 import { promises as fs } from "fs";
 import { ChildProcess, spawn } from "child_process";
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
-import { StreamableHTTPClientTransport } from "@modelcontextprotocol/sdk/client/streamableHttp.js";
+import { SSEClientTransport } from "@modelcontextprotocol/sdk/client/sse.js";
 
 describe("patch e2e", () => {
   let client: Client;
@@ -24,7 +24,7 @@ describe("patch e2e", () => {
     });
 
     client = new Client({ name: "diffcalculia-mcp-client", version: "1.0.0" });
-    await client.connect(new StreamableHTTPClientTransport(new URL("http://localhost:3002/mcp")));
+    await client.connect(new SSEClientTransport(new URL("http://localhost:3002/sse")));
   });
 
   afterAll(async () => {

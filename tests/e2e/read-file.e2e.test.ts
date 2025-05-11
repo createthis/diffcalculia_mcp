@@ -18,8 +18,14 @@ describe("read_file tool (e2e)", () => {
     const serverScript = path.resolve(__dirname, path.join("..", "..", "diffcalculia-mcp.ts"));
     serverProcess = spawn("node", ["--import", "tsx/esm", serverScript]);
 
-    // Wait for server to be ready
-    await new Promise(resolve => setTimeout(resolve, 1000));
+    // Wait for "listening" message
+    await new Promise<void>((resolve) => {
+      serverProcess.stdout.on('data', (data) => {
+        if (data.includes('listening on port')) {
+          resolve();
+        }
+      });
+    });
 
     // Setup client
     client = new Client({
