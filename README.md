@@ -21,9 +21,34 @@ This server is currently implemented using the StreamableHttp tranport layer. It
 npm install
 ```
 
-# Running the Server
+# Build docker image
 
-Start the server:
+First, install Docker Desktop. Then:
+
+```bash
+npm run build-docker
+```
+
+# Run the server under docker
+
+Running `diffcalculia-mcp` under docker gives you the ability to isolate the changes 
+your AI can make to just one directory on your machine. This is HIGHLY RECOMMENDED!
+
+```bash
+export WORKSPACE_BASE=/path/to/directory/you/want/AI/to/modify
+docker run -it --rm \
+  -p 3002:3002 \
+  -v $WORKSPACE_BASE:/workspace \
+  -e SANDBOX_USER_ID=$(id -u) \
+  diffcalculia-server
+```
+
+# Running the server without docker (Not recommended! Dangerous!)
+
+WARNING: If you do this your AI has the ability to modify anything on your machine that
+you have the ability to modify! This is super dangerous! STRONGLY recommend using docker 
+method above, instead.
+
 ```bash
 npm run dev
 ```
