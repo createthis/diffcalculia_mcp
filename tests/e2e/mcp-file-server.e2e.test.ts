@@ -1,26 +1,36 @@
 // tests/e2e/mcp-file-server.e2e.ts
 import path from "path";
 import { promises as fs } from "fs";
+import { ChildProcess, spawn } from "child_process";
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
-import { StdioClientTransport } from "@modelcontextprotocol/sdk/client/stdio.js";
+import { StreamableHTTPClientTransport } from "@modelcontextprotocol/sdk/client/streamableHttp.js";
 
 describe("mcp-file-server e2e", () => {
   let client: Client;
+  let serverProcess: ChildProcess;
   const FIX = path.resolve(__dirname, path.join("..", "fixtures"));
   const OUT = path.join(FIX, "out-e2e.txt");
 
   beforeAll(async () => {
     const serverScript = path.resolve(__dirname, "../../mcp-file-server.ts");
-    const transport = new StdioClientTransport({
-      command: "node",
-      args: ["--import", "tsx/esm", serverScript],
-    });
-    client = new Client({ name: "file-server-client", version: "1.0.0" });
-    await client.connect(transport);  // :contentReference[oaicite:0]{index=0}
+    serverProcess = spawn("node", ["--import", "tsx/esm", serverScript]);
+
+    // Wait for server to be ready
+    await new Promise(resolve => setTimeout(resolve, 1000));
+
+    client = new Client({ name: "diffcalculia-mcp-client", version: "1.0.0" });
+    try {
+      await client.connect(new StreamableHTTPClientTransport(new URL("http://localhost:3002/mcp")));
+      console.log("Client connected successfully");
+    } catch (err) {
+      console.error("Connection failed:", err);
+      throw err;
+    }
   });
 
   afterAll(async () => {
     await client.close();
+    serverProcess.kill();
   });
 
   beforeEach(async () => {
@@ -30,9 +40,9 @@ describe("mcp-file-server e2e", () => {
 
   it("applies a well-formed diff", async () => {
     const patch = await fs.readFile(path.join(FIX, "change.diff"), "utf8");
-    const res = await client.callTool({ 
-      name: "diffcalculia", 
-      arguments: { diff: patch, path: OUT }  // :contentReference[oaicite:1]{index=1}
+    const res = await client.callTool({
+      name: "diffcalculia",
+      arguments: { diff: patch, path: OUT }
     });
     const expected = await fs.readFile(path.join(FIX, "expected.txt"), "utf8");
     expect(res.content[0].text).toBe(expected);
