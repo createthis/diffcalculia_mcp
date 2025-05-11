@@ -43,6 +43,16 @@ docker run -it --rm \
   diffcalculia-mcp
 ```
 
+
+# Open Hands AI
+
+So... how do you use this with Open Hands AI under Docker?
+
+That's the neat part: You don't!
+
+https://github.com/All-Hands-AI/OpenHands/issues/8435
+
+
 # Running the server without docker (Not recommended! Dangerous!)
 
 WARNING: If you do this your AI has the ability to modify anything on your machine that
