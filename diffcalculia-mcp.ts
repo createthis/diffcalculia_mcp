@@ -37,11 +37,13 @@ export async function readFileWithLines(
   const lines = content.split('\n');
 
   if (typeof lineNumber === 'undefined') {
-    // Return all lines with numbering
     const maxDigits = String(lines.length).length;
-    return lines.map((line, i) =>
-      `${String(i+1).padStart(maxDigits)}|${line}`
-    ).join('\n');
+    const numberedLines = lines.map((line, i) =>
+      i < lines.length - 1 || line !== '' // Skip numbering blank last line
+        ? `${String(i+1).padStart(maxDigits)}|${line}`
+        : line
+    );
+    return numberedLines.join('\n');
   }
 
   // Calculate line range

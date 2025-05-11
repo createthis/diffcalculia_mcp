@@ -9,6 +9,7 @@ describe("read_file tool (e2e)", () => {
   const TEST_URL = `http://localhost:${TEST_PORT}/mcp`;
   const FIXTURES = path.resolve(__dirname, path.join("..", "fixtures"));
   const SAMPLE_FILE = path.join(FIXTURES, "sample.txt");
+  const TRAILING_NEWLINE_FILE = path.join(FIXTURES, "original.txt");
   
   let client: Client;
   let serverProcess: ChildProcess;
@@ -44,7 +45,17 @@ describe("read_file tool (e2e)", () => {
     serverProcess.kill();
   });
 
-  it("reads entire file with correct formatting", async () => {
+  it("reads entire file without trailing newline with correct formatting", async () => {
+    const result = await client.callTool({
+      name: "read_file",
+      arguments: { path: TRAILING_NEWLINE_FILE }
+    });
+    expect(result.content[0].text).toBe(
+      "1|test\n2|two\n3|three\n4|four\n"
+    );
+  });
+
+  it("reads entire file with trailing newline with correct formatting", async () => {
     const result = await client.callTool({
       name: "read_file",
       arguments: { path: SAMPLE_FILE }

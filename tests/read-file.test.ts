@@ -6,6 +6,7 @@ describe("readFileWithLines", () => {
   const FIXTURES = path.resolve(__dirname, "fixtures");
   const SAMPLE_FILE = path.join(FIXTURES, "sample.txt");
   const EMPTY_FILE = path.join(FIXTURES, "empty.txt");
+  const TRAILING_NEWLINE_FILE = path.join(FIXTURES, "original.txt");
 
   beforeAll(async () => {
     // Create test files
@@ -14,7 +15,14 @@ describe("readFileWithLines", () => {
     await fs.writeFile(EMPTY_FILE, "", "utf8");
   });
 
-  it("reads entire file with correct line numbers", async () => {
+  it("reads entire file without trailing newline with correct line numbers", async () => {
+    const result = await readFileWithLines(TRAILING_NEWLINE_FILE);
+    expect(result).toBe(
+      "1|test\n2|two\n3|three\n4|four\n"
+    );
+  });
+
+  it("reads entire file with trailing newline with correct line numbers", async () => {
     const result = await readFileWithLines(SAMPLE_FILE);
     expect(result).toBe(
       "1|line1\n2|line2\n3|line3\n4|line4\n5|line5"
