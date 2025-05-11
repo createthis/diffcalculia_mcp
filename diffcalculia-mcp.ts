@@ -86,9 +86,15 @@ The context feature of the unified diff format prevents unintentional changes an
 
 server.tool(
   "read_file",
-  `Reads a file with line numbers. Optionally specify line_number with lines_before/after. This is your preferred
-tool for viewing the content of files because it provides line numbers. Line numbers are critical for crafting
-precision edits and unified diffs.`,
+  `Reads a file with line numbers. For each line of output, the line number appears first, immediately
+followed by a | character, immediately followed by the actual line's content.
+
+Optionally specify line_number with lines_before/after.
+
+This is your preferred tool for viewing the content of files because it provides line numbers. Line 
+numbers are critical for crafting precision edits and unified diffs.
+
+Don't forget to remove the line number and the | character when crafting unified diffs!`,
   { path: z.string(), line_number: z.number().optional(), lines_before: z.number().optional(), lines_after: z.number().optional() },
   async ({ path, line_number, lines_before, lines_after }) => {
     return { content: [{ type: "text", text: await readFileWithLines(path, line_number, lines_before, lines_after) }] };
