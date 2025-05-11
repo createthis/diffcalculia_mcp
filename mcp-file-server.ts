@@ -23,6 +23,37 @@ export async function applyDiffCalculia(patch: string, filePath: string): Promis
 }
 
 
+export async function readFileWithLines(
+  filePath: string,
+  lineNumber?: number,
+  linesBefore?: number,
+  linesAfter?: number
+): Promise<string> {
+  const content = await fs.readFile(filePath, "utf8");
+  if (content === "") {
+    return "";
+  }
+  const lines = content.split('\n');
+
+  if (typeof lineNumber === 'undefined') {
+    // Return all lines with numbering
+    const maxDigits = String(lines.length).length;
+    return lines.map((line, i) =>
+      `${String(i+1).padStart(maxDigits)}|${line}`
+    ).join('\n');
+  }
+
+  // Calculate line range
+  const start = Math.max(0, lineNumber - 1 - (linesBefore || 0));
+  const end = Math.min(lines.length, lineNumber + (linesAfter || 0));
+  const selectedLines = lines.slice(start, end);
+
+  const maxDigits = String(end).length;
+  return selectedLines.map((line, i) =>
+    `${String(start + i + 1).padStart(maxDigits)}|${line}`
+  ).join('\n');
+}
+
 const app = express();
 app.use(express.json());
 
@@ -66,6 +97,15 @@ app.post('/mcp', async (req, res) => {
       async ({ diff, path }) => {
         const newContents = await applyDiffCalculia(diff, path);
         return { content: [{ type: "text", text: newContents }] };
+      }
+    );
+
+    server.tool(
+      "read_file",
+      "Reads a file with line numbers. Optionally specify line_number with lines_before/after.",
+      { path: z.string(), line_number: z.number().optional(), lines_before: z.number().optional(), lines_after: z.number().optional() },
+      async ({ path, line_number, lines_before, lines_after }) => {
+        return { content: [{ type: "text", text: await readFileWithLines(path, line_number, lines_before, lines_after) }] };
       }
     );
 

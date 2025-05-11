@@ -20,9 +20,10 @@ server.log
 # MacOS
 .DS_Store
 
-# Editors
-*.swp
-*~
+# vim
+**/*.swo
+**/*.swp
+**/*~
 
 # Python virtual environment
 my_venv/
