@@ -10,7 +10,7 @@ import { promises as fs } from "fs";
 import { isInitializeRequest } from "@modelcontextprotocol/sdk/types.js"
 
 
-export async function applyDiffCalculia(patch: string, filePath: string): Promise<string> {
+export async function patch(patch: string, filePath: string): Promise<string> {
   // validate & auto-fix headers
   const fixed = validatePatch(patch, true);
   // load original
@@ -91,11 +91,11 @@ app.post('/mcp', async (req, res) => {
     });
 
     server.tool(
-      "diffcalculia",
+      "patch",
       "This tool allows you to edit files. Give it a file path and a unified diff and it will edit the file for you.",
       { diff: z.string(), path: z.string() },
       async ({ diff, path }) => {
-        const newContents = await applyDiffCalculia(diff, path);
+        const newContents = await patch(diff, path);
         return { content: [{ type: "text", text: newContents }] };
       }
     );

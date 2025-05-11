@@ -19,13 +19,7 @@ describe("mcp-file-server e2e", () => {
     await new Promise(resolve => setTimeout(resolve, 1000));
 
     client = new Client({ name: "diffcalculia-mcp-client", version: "1.0.0" });
-    try {
-      await client.connect(new StreamableHTTPClientTransport(new URL("http://localhost:3002/mcp")));
-      console.log("Client connected successfully");
-    } catch (err) {
-      console.error("Connection failed:", err);
-      throw err;
-    }
+    await client.connect(new StreamableHTTPClientTransport(new URL("http://localhost:3002/mcp")));
   });
 
   afterAll(async () => {
@@ -41,7 +35,7 @@ describe("mcp-file-server e2e", () => {
   it("applies a well-formed diff", async () => {
     const patch = await fs.readFile(path.join(FIX, "change.diff"), "utf8");
     const res = await client.callTool({
-      name: "diffcalculia",
+      name: "patch",
       arguments: { diff: patch, path: OUT }
     });
     const expected = await fs.readFile(path.join(FIX, "expected.txt"), "utf8");
@@ -50,7 +44,7 @@ describe("mcp-file-server e2e", () => {
   });
 
   it("throws on malformed diff", async () => {
-    const result = await client.callTool({ name: "diffcalculia", arguments: { diff: "not a diff", path: OUT } });
+    const result = await client.callTool({ name: "patch", arguments: { diff: "not a diff", path: OUT } });
     expect(result.isError).toBe(true);
     expect(result.content[0].text).toBe('Need minimum 4 lines, got 1');
   });

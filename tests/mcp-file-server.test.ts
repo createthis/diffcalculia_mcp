@@ -1,9 +1,9 @@
 // tests/mcp-file-server.test.ts
-import { applyDiffCalculia } from "../mcp-file-server";
+import { patch } from "../mcp-file-server";
 import { promises as fs } from "fs";
 import path from "path";
 
-describe("applyDiffCalculia", () => {
+describe("patch", () => {
   const FIX = path.resolve(__dirname, "fixtures");
   const ORIG = path.join(FIX, "original.txt");
   const DIFF = path.join(FIX, "change.diff");
@@ -17,14 +17,14 @@ describe("applyDiffCalculia", () => {
   });
 
   it("applies a well-formed diff", async () => {
-    const patch = await fs.readFile(DIFF, "utf8");
-    const out = await applyDiffCalculia(patch, OUT);
+    const diff = await fs.readFile(DIFF, "utf8");
+    const out = await patch(diff, OUT);
     const exp = await fs.readFile(EXPECT, "utf8");
     expect(out).toBe(exp);
     expect(await fs.readFile(OUT, "utf8")).toBe(exp);
   });
 
   it("throws on malformed diff", async () => {
-    await expect(applyDiffCalculia("not a diff", OUT)).rejects.toThrow();
+    await expect(patch("not a diff", OUT)).rejects.toThrow();
   });
 });
