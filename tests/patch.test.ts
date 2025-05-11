@@ -3,27 +3,46 @@ import { promises as fs } from "fs";
 import path from "path";
 
 describe("patch", () => {
-  const FIX = path.resolve(__dirname, "fixtures");
-  const ORIG = path.join(FIX, "original.txt");
-  const DIFF = path.join(FIX, "change.diff");
-  const EXPECT = path.join(FIX, "expected.txt");
-  const OUT = path.join(FIX, "out.txt");
+  const fixturesPath = path.resolve(__dirname, "fixtures");
+  const originalFixturePath = path.join(fixturesPath, "original.txt");
+  const changeFixturePath = path.join(fixturesPath, "change.diff");
+  const changeFixableFixturePath = path.join(fixturesPath, "change_fixable.diff");
+  const changeNotFixableFixturePath = path.join(fixturesPath, "change_not_fixable.diff");
+  const expectFixturePath = path.join(fixturesPath, "expected.txt");
+  const outFixturePath = path.join(fixturesPath, "out.txt");
 
   beforeEach(async () => {
     // reset out file with original before each test
-    const base = await fs.readFile(path.join(FIX, "original.txt"), "utf8");
-    await fs.writeFile(OUT, base, "utf8");
+    const base = await fs.readFile(originalFixturePath, "utf8");
+    await fs.writeFile(outFixturePath, base, "utf8");
   });
 
   it("applies a well-formed diff", async () => {
-    const diff = await fs.readFile(DIFF, "utf8");
-    const out = await patch(diff, OUT);
-    const exp = await fs.readFile(EXPECT, "utf8");
+    const diff = await fs.readFile(changeFixturePath, "utf8");
+    const exp = await fs.readFile(expectFixturePath, "utf8");
+    const result = await patch(diff, outFixturePath);
+    expect(result).not.toBe(false);
+    const out = await fs.readFile(outFixturePath, "utf8");
     expect(out).toBe(exp);
-    expect(await fs.readFile(OUT, "utf8")).toBe(exp);
+    expect(result).toBe(diff);
+  });
+
+  it("fixes and applies a diff with hunk header errors", async () => {
+    const diff = await fs.readFile(changeFixableFixturePath, "utf8");
+    const result = await patch(diff, outFixturePath);
+    const exp = await fs.readFile(expectFixturePath, "utf8");
+    const out = await fs.readFile(outFixturePath, "utf8");
+    expect(out).toBe(exp);
+    const changeDiff = await fs.readFile(changeFixturePath, "utf8");
+    expect(result).toBe(`Let me fix that for you\n${changeDiff}`);
   });
 
   it("throws on malformed diff", async () => {
-    await expect(patch("not a diff", OUT)).rejects.toThrow();
+    await expect(patch("not a diff", outFixturePath)).rejects.toThrow('Need minimum 4 lines, got 1');
+  });
+
+  it("throws on outdated diff", async () => {
+    const diff = await fs.readFile(changeNotFixableFixturePath, "utf8");
+    await expect(patch(diff, outFixturePath)).rejects.toThrow('Failed to apply patch');
   });
 });

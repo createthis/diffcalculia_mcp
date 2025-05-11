@@ -37,9 +37,10 @@ describe("patch e2e", () => {
       name: "patch",
       arguments: { diff: patch, path: OUT }
     });
+    const out = await fs.readFile(OUT, "utf8");
     const expected = await fs.readFile(path.join(FIX, "expected.txt"), "utf8");
-    expect(res.content[0].text).toBe(expected);
-    expect(await fs.readFile(OUT, "utf8")).toBe(expected);
+    expect(out).toBe(expected);
+    expect(res.content[0].text).toBe(patch);
   });
 
   it("throws on malformed diff", async () => {

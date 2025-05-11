@@ -1,0 +1,7 @@
+--- original.txt	2025-05-09 14:26:20
++++ expected.txt	2025-05-09 14:26:50
+@@ -1,4 +1,3 @@
+ test
+-two
+ six
+ four

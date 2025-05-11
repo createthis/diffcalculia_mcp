@@ -12,13 +12,14 @@ import { isInitializeRequest } from "@modelcontextprotocol/sdk/types.js"
 export async function patch(patch: string, filePath: string): Promise<string> {
   // validate & auto-fix headers
   const fixed = validatePatch(patch, true);
-  // load original
+  let output = '';
+  if (patch !== fixed) output += "Let me fix that for you\n";
+  output += fixed;
   const original = await fs.readFile(filePath, "utf8");
-  // apply unified diff
   const result = applyPatch(original, fixed);
   if (result === false) throw new Error("Failed to apply patch");
   await fs.writeFile(filePath, result, "utf8");
-  return result;
+  return output;
 }
 
 
@@ -91,7 +92,8 @@ app.post('/mcp', async (req, res) => {
 
     server.tool(
       "patch",
-      "This tool allows you to edit files. Give it a file path and a unified diff and it will edit the file for you.",
+      `This tool allows you to edit files. Give it a file path and a unified diff and it will edit the file for you.
+The output is the diff that was applied. If the diff was modified, it will contain "Let me fix that for you".`,
       { diff: z.string(), path: z.string() },
       async ({ diff, path }) => {
         const newContents = await patch(diff, path);
