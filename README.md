@@ -56,15 +56,7 @@ To use this with Open Hands AI under Docker:
    MCP settings editor UI, but it doesn't seem to like old settings files.
 
    The settings file lives here: `~/.openhands-state/settings.json`.
-3. Start your Open Hands AI docker. Add this command:
-
-   ```bash
-       -v ~/.openhands/config.toml:/app/config.toml \
-   ```
-
-   This mounts your `~/.openhands/config.toml` inside the docker container at `/app/config.toml`.
-
-   My full example command looks like this:
+3. Start your Open Hands AI docker. My full example command looks like this:
 
    ```bash
    export WORKSPACE_BASE=/path/to/directory/you/want/AI/to/modify
