@@ -46,11 +46,67 @@ docker run -it --rm \
 
 # Open Hands AI
 
-So... how do you use this with Open Hands AI under Docker?
+To use this with Open Hands AI under Docker:
 
-That's the neat part: You don't!
+1. First, build your docker container and run it (see instructions above). It is important that your
+   `WORKSPACE_BASE` for this MCP server matches the `WORKSPACE_BASE` you are using with Open Hands AI.
+2. Create `~/.openhands/config.toml`:
 
-https://github.com/All-Hands-AI/OpenHands/issues/8435
+   ```bash
+   mkdir ~/.openhands
+   vim ~/.openhands/config.toml
+   ```
+
+   It should look like this:
+
+   ```toml
+   [mcp]
+   # SSE Servers - External servers that communicate via Server-Sent Events
+   sse_servers = [
+     "http://host.docker.internal:3002/sse",
+   ]
+   ```
+
+   Note the `/sse` postfix. This is the legacy SSE api. I couldn't get it working with the more modern
+   `/mcp` streamable API. `3002` is the port of your MCP server that Open Hands will connect to.
+
+2. Start your Open Hands AI docker. Add this command:
+
+   ```bash
+       -v ~/.openhands/config.toml:/app/config.toml \
+   ```
+
+   This mounts your `~/.openhands/config.toml` inside the docker container at `/app/config.toml`.
+
+   My full example command looks like this:
+
+   ```bash
+   docker run -it --rm   \
+    -p 3001:3000   \
+    -e SANDBOX_USER_ID=$(id -u) \
+    -e WORKSPACE_MOUNT_PATH=$WORKSPACE_BASE \
+    -v $WORKSPACE_BASE:/opt/workspace_base \
+    -e AGENT_ENABLE_EDITOR=false \
+    -e AGENT_ENABLE_PROMPT_EXTENSIONS=false \
+    -e LOG_ALL_EVENTS=true \
+    -v ~/.openhands-state:/.openhands-state \
+    -v ~/.openhands/config.toml:/app/config.toml \
+    -v /var/run/docker.sock:/var/run/docker.sock   \
+    --add-host host.docker.internal:host-gateway  \
+    -e SANDBOX_RUNTIME_CONTAINER_IMAGE=docker.all-hands.dev/all-hands-ai/runtime:e26ca14-nikolaik   \
+    --name openhands-app-e26ca14   \
+    docker.all-hands.dev/all-hands-ai/openhands:e26ca14
+   ```
+3. Navigate to open hands in your browser and start a chat. Back in the terminal, you should see:
+
+   ```
+   19:55:11 - openhands:INFO: base.py:344 - In workspace mount mode, not initializing a new git repository.
+   19:55:11 - openhands:INFO: utils.py:52 - Initializing MCP agent for url='http://host.docker.internal:3002/sse' api_key='******' with SSE connection...
+   19:55:11 - openhands:INFO: client.py:90 - Connected to server with tools: ['patch', 'read_file']
+   ```
+
+   If you click the three vertical dots in the lower right next to `Conversation` then click `Show Agent Tools & Metadata`
+   you should see the `patch` and `read_file` tools.
 
 
 # Running the server without docker (Not recommended! Dangerous!)
