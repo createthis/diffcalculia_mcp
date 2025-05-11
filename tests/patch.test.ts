@@ -5,10 +5,13 @@ import path from "path";
 describe("patch", () => {
   const fixturesPath = path.resolve(__dirname, "fixtures");
   const originalFixturePath = path.join(fixturesPath, "original.txt");
+  const originalWithWhitespaceFixturePath = path.join(fixturesPath, "original_with_whitespace.txt");
   const changeFixturePath = path.join(fixturesPath, "change.diff");
+  const changeIncorrectWhitespaceFixturePath = path.join(fixturesPath, "change_incorrect_whitespace.diff");
   const changeFixableFixturePath = path.join(fixturesPath, "change_fixable.diff");
   const changeNotFixableFixturePath = path.join(fixturesPath, "change_not_fixable.diff");
   const expectFixturePath = path.join(fixturesPath, "expected.txt");
+  const expectWithWhitespaceFixturePath = path.join(fixturesPath, "expected_with_whitespace.txt");
   const outFixturePath = path.join(fixturesPath, "out.txt");
 
   beforeEach(async () => {
@@ -20,6 +23,18 @@ describe("patch", () => {
   it("applies a well-formed diff", async () => {
     const diff = await fs.readFile(changeFixturePath, "utf8");
     const exp = await fs.readFile(expectFixturePath, "utf8");
+    const result = await patch(diff, outFixturePath);
+    expect(result).not.toBe(false);
+    const out = await fs.readFile(outFixturePath, "utf8");
+    expect(out).toBe(exp);
+    expect(result).toBe(diff);
+  });
+
+  it("applies a diff with incorrect whitespace", async () => {
+    const base = await fs.readFile(originalWithWhitespaceFixturePath, "utf8");
+    await fs.writeFile(outFixturePath, base, "utf8");
+    const diff = await fs.readFile(changeIncorrectWhitespaceFixturePath, "utf8");
+    const exp = await fs.readFile(expectWithWhitespaceFixturePath, "utf8");
     const result = await patch(diff, outFixturePath);
     expect(result).not.toBe(false);
     const out = await fs.readFile(outFixturePath, "utf8");

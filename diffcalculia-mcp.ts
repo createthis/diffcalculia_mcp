@@ -9,6 +9,12 @@ import { applyPatch } from "diff";
 import { promises as fs } from "fs";
 import { isInitializeRequest } from "@modelcontextprotocol/sdk/types.js"
 
+export function compareLine(lineNumber: number, line: string, operation: string, patchContent: string): boolean {
+  // Normalize whitespace sequences to single space for comparison
+  // This is similar to Mac/Darwin patch --ignore-whitespace
+  const normalize = (s: string) => s.replace(/\s+/g, ' ');
+  return normalize(line) === normalize(patchContent);
+}
 
 export async function patch(patch: string, filePath: string): Promise<string> {
   // validate & auto-fix headers
@@ -17,7 +23,10 @@ export async function patch(patch: string, filePath: string): Promise<string> {
   if (patch !== fixed) output += "Let me fix that for you\n";
   output += fixed;
   const original = await fs.readFile(filePath, "utf8");
-  const result = applyPatch(original, fixed);
+  const result = applyPatch(original, fixed, {
+    autoConvertLineEndings: true,
+    compareLine,
+  });
   if (result === false) throw new Error("Failed to apply patch");
   await fs.writeFile(filePath, result, "utf8");
   return output;
