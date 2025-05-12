@@ -32,6 +32,10 @@ export async function patch(patch: string, filePath: string): Promise<string> {
   return output;
 }
 
+export async function createFile(path: string, content: string): Promise<string> {
+  return fs.writeFile(path, content, { flag: "wx" }); // wx flag fails if exists
+}
+
 
 export async function readFileWithLines(
   filePath: string,
@@ -101,6 +105,19 @@ Don't forget to remove the line number and the | character when crafting unified
   }
 );
 
+server.tool(
+  "create_file",
+  `Creates a new file with the specified content. Fails if file already exists.
+  Arguments:
+  - path: string - file path to create
+  - content: string - file content`,
+  { path: z.string(), content: z.string() },
+  async ({ path, content }) => {
+    await createFile(path, content);
+    return { content: [{ type: "text", text: `File created: ${path}` }] };
+  }
+);
+ 
 const app = express();
 app.use(express.json());
 
@@ -205,3 +222,4 @@ if (require.main === module) {
     console.log('listening on port', port);
   });
 }
+
