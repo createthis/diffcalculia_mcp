@@ -196,7 +196,9 @@ app.get('/mcp', handleSessionRequest);
 // Handle DELETE requests for session termination
 app.delete('/mcp', handleSessionRequest);
 
-const port = 3002;
+const port = process.argv.includes('--port') 
+  ? parseInt(process.argv[process.argv.indexOf('--port') + 1]) 
+  : 3002;
 if (require.main === module) {
   app.listen(port, (error) => {
     if (error) return console.log(error);

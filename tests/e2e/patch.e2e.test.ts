@@ -3,6 +3,7 @@ import { promises as fs } from "fs";
 import { ChildProcess, spawn } from "child_process";
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { StreamableHTTPClientTransport } from "@modelcontextprotocol/sdk/client/streamableHttp.js";
+import { startTestServer } from "./helpers";
 
 describe("patch e2e", () => {
   let client: Client;
@@ -11,20 +12,7 @@ describe("patch e2e", () => {
   const OUT = path.join(FIX, "out-e2e.txt");
 
   beforeAll(async () => {
-    const serverScript = path.resolve(__dirname, path.join("..", "..", "diffcalculia-mcp.ts"));
-    serverProcess = spawn("node", ["--import", "tsx/esm", serverScript]);
-
-    // Wait for "listening" message
-    await new Promise<void>((resolve) => {
-      serverProcess.stdout.on('data', (data) => {
-        if (data.includes('listening on port')) {
-          resolve();
-        }
-      });
-    });
-
-    client = new Client({ name: "diffcalculia-mcp-client", version: "1.0.0" });
-    await client.connect(new StreamableHTTPClientTransport(new URL("http://localhost:3002/mcp")));
+    ({ client, serverProcess } = await startTestServer(path.resolve(__dirname, path.join("..", "..", "diffcalculia-mcp.ts"))));
   });
 
   afterAll(async () => {

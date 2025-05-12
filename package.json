@@ -20,7 +20,7 @@
   },
   "scripts": {
     "dev": "tsx diffcalculia-mcp.ts",
-    "test": "jest --runInBand",
+    "test": "jest",
     "test:watch": "jest --watch",
     "lint": "tsc --module NodeNext --moduleResolution nodenext --target ES2022 --noEmit",
     "build-docker": "docker build -t diffcalculia-mcp ."

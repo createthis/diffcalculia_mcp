@@ -3,40 +3,22 @@ import path from "path";
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { StreamableHTTPClientTransport } from "@modelcontextprotocol/sdk/client/streamableHttp";
 import { ChildProcess, spawn } from "child_process";
+import { startTestServer } from "./helpers";
 
 describe("read_file tool (e2e)", () => {
-  const TEST_PORT = 3002;
-  const TEST_URL = `http://localhost:${TEST_PORT}/mcp`;
   const FIXTURES = path.resolve(__dirname, path.join("..", "fixtures"));
   const SAMPLE_FILE = path.join(FIXTURES, "sample.txt");
   const TRAILING_NEWLINE_FILE = path.join(FIXTURES, "original.txt");
   
   let client: Client;
   let serverProcess: ChildProcess;
+  let testUrl: string;
 
   beforeAll(async () => {
-    // Start server
-    const serverScript = path.resolve(__dirname, path.join("..", "..", "diffcalculia-mcp.ts"));
-    serverProcess = spawn("node", ["--import", "tsx/esm", serverScript]);
-
-    // Wait for "listening" message
-    await new Promise<void>((resolve) => {
-      serverProcess.stdout.on('data', (data) => {
-        if (data.includes('listening on port')) {
-          resolve();
-        }
-      });
-    });
-
-    // Setup client
-    client = new Client({
-      name: "test-client",
-      version: "1.0.0"
-    });
-    await client.connect(new StreamableHTTPClientTransport(new URL(TEST_URL)));
-
-    // Create test file
-    await fs.mkdir(FIXTURES, { recursive: true });
+    const { client: c, serverProcess: sp, port } = await startTestServer(path.resolve(__dirname, path.join("..", "..", "diffcalculia-mcp.ts")));
+    client = c;
+    serverProcess = sp;
+    testUrl = `http://localhost:${port}/mcp`;
     await fs.writeFile(SAMPLE_FILE, "line1\nline2\nline3\nline4\nline5", "utf8");
   });
 
