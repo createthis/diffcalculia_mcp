@@ -7,11 +7,11 @@ This particular server is written in Typescript and provides a tool the AI can u
 local files by passing a path and a diff in unified diff format. It uses https://github.com/createthis/diffcalculia-ts
 internally to fix diffs before applying them using https://github.com/kpdecker/jsdiff.
 
-**WARNING: This is pre-Alpha software. It is basically just a playground for an idea at this
-point and is subject to change. IT WILL PROBABLY OVERWRITE YOUR FILESYSTEM AND BREAK YOUR
-MACHINE. Seriously. DO NOT USE. Very very unsafe.**
+**WARNING: This software is designed to allow AIs to edit files on your local machine. I strongly
+strongly recommend you run it under docker and mount your code directory so you have a degree of 
+isolation. If you choose to ignore this warning, you do so at your own risk.**
 
-This server is currently implemented using the StreamableHttp tranport layer. It starts on port 3002.
+This server is currently implemented using the StreamableHttp transport layer. It starts on port 3002.
 
 
 # Installation
