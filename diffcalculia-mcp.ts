@@ -99,9 +99,25 @@ This is your preferred tool for viewing the content of files because it provides
 numbers are critical for crafting precision edits and unified diffs.
 
 Don't forget to remove the line number and the | character when crafting unified diffs!`,
-  { path: z.string(), line_number: z.number().optional(), lines_before: z.number().optional(), lines_after: z.number().optional() },
+  { 
+    path: z.string(),
+    line_number: z.string().optional(),
+    lines_before: z.string().optional(),
+    lines_after: z.string().optional()
+  },
   async ({ path, line_number, lines_before, lines_after }) => {
-    return { content: [{ type: "text", text: await readFileWithLines(path, line_number, lines_before, lines_after) }] };
+    let line_number_int;
+    let lines_before_int;
+    let lines_after_int;
+    if (line_number) line_number_int = parseInt(line_number);
+    if (lines_before) lines_before_int = parseInt(lines_before);
+    if (lines_after) lines_after_int = parseInt(lines_after);
+    return { content: [{ type: "text", text: await readFileWithLines(
+      path,
+      line_number_int,
+      lines_before_int,
+      lines_after_int
+    ) }] };
   }
 );
 

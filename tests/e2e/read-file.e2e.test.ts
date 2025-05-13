@@ -52,9 +52,9 @@ describe("read_file tool (e2e)", () => {
       name: "read_file",
       arguments: { 
         path: SAMPLE_FILE,
-        line_number: 3,
-        lines_before: 1,
-        lines_after: 1
+        line_number: "3",
+        lines_before: "1",
+        lines_after: "1"
       }
     });
     expect(result.content[0].text).toBe("2|line2\n3|line3\n4|line4");
