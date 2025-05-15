@@ -16,18 +16,35 @@ export function compareLine(lineNumber: number, line: string, operation: string,
   return normalize(line) === normalize(patchContent);
 }
 
-export async function patch(patch: string, filePath: string): Promise<string> {
+export async function patch(patch: string, filePath: string, verbose = false): Promise<string> {
+  if (verbose) {
+    console.log("\n\npatch filePath=", filePath, ", patch=\n", patch);
+  }
   // validate & auto-fix headers
   const fixed = validatePatch(patch, true);
   let output = '';
   if (patch !== fixed) output += "Let me fix that for you\n";
   output += fixed;
+
+  if (verbose) {
+    console.log('patch filePath=', filePath, ", output=\n", output);
+  }
+
   const original = await fs.readFile(filePath, "utf8");
   const result = applyPatch(original, fixed, {
     autoConvertLineEndings: true,
     compareLine,
   });
-  if (result === false) throw new Error("Failed to apply patch");
+  if (result === false) {
+    const message = 'Failed to apply patch';
+    if (verbose) {
+      console.log('patch filePath=', filePath, ", result=", result, ', message=', message);
+    }
+    throw new Error(message);
+  }
+  if (verbose) {
+    console.log('patch filePath=', filePath, ", result=\n", result);
+  }
   await fs.writeFile(filePath, result, "utf8");
   return output;
 }
@@ -83,8 +100,10 @@ This is your preferred file editing tool because it works well with long files a
 The context feature of the unified diff format prevents unintentional changes and allows precision edits.`,
   { diff: z.string(), path: z.string() },
   async ({ diff, path }) => {
-    const newContents = await patch(diff, path);
-    return { content: [{ type: "text", text: newContents }] };
+    const verbose = process.argv.includes('--verbose');
+    const newContents = await patch(diff, path, verbose);
+    const response = { content: [{ type: "text", text: newContents }] };
+    return response;
   }
 );
 

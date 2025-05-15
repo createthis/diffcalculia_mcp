@@ -19,7 +19,7 @@
     "typescript": "^5.8.3"
   },
   "scripts": {
-    "dev": "tsx diffcalculia-mcp.ts",
+    "dev": "tsx diffcalculia-mcp.ts --verbose",
     "test": "jest",
     "test:watch": "jest --watch",
     "lint": "tsc --module NodeNext --moduleResolution nodenext --target ES2022 --noEmit",

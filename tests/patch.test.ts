@@ -1,5 +1,4 @@
-import { patch } from "../diffcalculia-mcp";
-import { promises as fs } from "fs";
+import { patch } from "../diffcalculia-mcp"; import { promises as fs } from "fs";
 import path from "path";
 
 describe("patch", () => {
@@ -23,7 +22,9 @@ describe("patch", () => {
   it("applies a well-formed diff", async () => {
     const diff = await fs.readFile(changeFixturePath, "utf8");
     const exp = await fs.readFile(expectFixturePath, "utf8");
+    const consoleSpy = jest.spyOn(console, 'log').mockImplementation(() => {});
     const result = await patch(diff, outFixturePath);
+    expect(consoleSpy).not.toHaveBeenCalled();
     expect(result).not.toBe(false);
     const out = await fs.readFile(outFixturePath, "utf8");
     expect(out).toBe(exp);
@@ -59,5 +60,85 @@ describe("patch", () => {
   it("throws on outdated diff", async () => {
     const diff = await fs.readFile(changeNotFixableFixturePath, "utf8");
     await expect(patch(diff, outFixturePath)).rejects.toThrow('Failed to apply patch');
+  });
+
+  describe('when verbose is true', () => {
+    it("applies a well-formed diff", async () => {
+      const diff = await fs.readFile(changeFixturePath, "utf8");
+      const exp = await fs.readFile(expectFixturePath, "utf8");
+      const consoleSpy = jest.spyOn(console, 'log').mockImplementation(() => {});
+
+      const result = await patch(diff, outFixturePath, true);
+
+      // Verify the combined log contains all expected information
+      expect(consoleSpy).toHaveBeenCalledTimes(3);
+      const filePathExpect = expect.stringMatching(/tests\/fixtures\/out.txt$/);
+      expect(consoleSpy).toHaveBeenNthCalledWith(
+        1,
+        "\n\npatch filePath=",
+        filePathExpect,
+        ", patch=\n",
+        diff
+      );
+      expect(consoleSpy).toHaveBeenNthCalledWith(
+        2,
+        "patch filePath=",
+        filePathExpect,
+        ", output=\n",
+        diff
+      );
+      expect(consoleSpy).toHaveBeenNthCalledWith(
+        3,
+        "patch filePath=",
+        filePathExpect,
+        ", result=\n",
+        exp
+      );
+
+      expect(result).not.toBe(false);
+      const out = await fs.readFile(outFixturePath, "utf8");
+      expect(out).toBe(exp);
+      consoleSpy.mockRestore();
+    });
+
+    it("fixes and applies a diff with hunk header errors", async () => {
+      const diff = await fs.readFile(changeFixableFixturePath, "utf8");
+      const exp = await fs.readFile(expectFixturePath, "utf8");
+      const consoleSpy = jest.spyOn(console, 'log')
+      .mockImplementation(() => {}); // Empty mock
+
+      const result = await patch(diff, outFixturePath, true);
+
+      // Verify the combined log contains all expected information
+      expect(consoleSpy).toHaveBeenCalledTimes(3);
+      const filePathExpect = expect.stringMatching(/tests\/fixtures\/out.txt$/);
+      expect(consoleSpy).toHaveBeenNthCalledWith(
+        1,
+        "\n\npatch filePath=",
+        filePathExpect,
+        ", patch=\n",
+        diff
+      );
+      const changeDiff = await fs.readFile(changeFixturePath, "utf8");
+      expect(consoleSpy).toHaveBeenNthCalledWith(
+        2,
+        "patch filePath=",
+        filePathExpect,
+        ", output=\n",
+        "Let me fix that for you\n"+changeDiff
+      );
+      expect(consoleSpy).toHaveBeenNthCalledWith(
+        3,
+        "patch filePath=",
+        filePathExpect,
+        ", result=\n",
+        exp
+      );
+
+      expect(result).not.toBe(false);
+      const out = await fs.readFile(outFixturePath, "utf8");
+      expect(out).toBe(exp);
+      consoleSpy.mockRestore();
+    });
   });
 });
