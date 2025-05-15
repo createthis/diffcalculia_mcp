@@ -7,7 +7,22 @@ import express = require("express");
 import { validatePatch } from "diffcalculia-ts";
 import { applyPatch } from "diff";
 import { promises as fs } from "fs";
-import { isInitializeRequest } from "@modelcontextprotocol/sdk/types.js"
+import { isInitializeRequest } from "@modelcontextprotocol/sdk/types.js";
+import chalk from 'chalk';
+
+const { greenBright:gb, yellow, red, green, white } = chalk;
+
+export const colorizeDiff=(d:string)=>
+ d.split('\n').map(l=>
+  l.startsWith('---')||l.startsWith('+++')?gb(l):
+  l.startsWith('@@')?yellow(l):
+  l.startsWith('-')?red(l):
+  l.startsWith('+')?green(l):
+  white(l)
+ ).join('\n');
+
+export const strongSeparator = chalk.magenta("===================================================");
+export const weakSeparator = chalk.blue("---------------------------------------------------");
 
 export function compareLine(lineNumber: number, line: string, operation: string, patchContent: string): boolean {
   // Normalize whitespace sequences to single space for comparison
@@ -18,7 +33,12 @@ export function compareLine(lineNumber: number, line: string, operation: string,
 
 export async function patch(patch: string, filePath: string, verbose = false): Promise<string> {
   if (verbose) {
-    console.log("\n\npatch filePath=", filePath, ", patch=\n", patch);
+    console.log("\n\npatch filePath=", filePath);
+    console.log(strongSeparator);
+    console.log("\npatch");
+    console.log(weakSeparator);
+    console.log(colorizeDiff(patch));
+    console.log(weakSeparator);
   }
   // validate & auto-fix headers
   const fixed = validatePatch(patch, true);
@@ -27,7 +47,12 @@ export async function patch(patch: string, filePath: string, verbose = false): P
   output += fixed;
 
   if (verbose) {
-    console.log('patch filePath=', filePath, ", output=\n", output);
+    if (patch !== fixed) {
+      console.log("\noutput");
+      console.log(weakSeparator);
+      console.log(colorizeDiff(output));
+      console.log(weakSeparator);
+    }
   }
 
   const original = await fs.readFile(filePath, "utf8");
@@ -38,12 +63,18 @@ export async function patch(patch: string, filePath: string, verbose = false): P
   if (result === false) {
     const message = 'Failed to apply patch';
     if (verbose) {
-      console.log('patch filePath=', filePath, ", result=", result, ', message=', message);
+      console.log("\nresult");
+      console.log(weakSeparator);
+      console.log("result=", result, ', message=', message);
+      console.log(weakSeparator);
+      console.log(strongSeparator);
+      console.log("fail");
     }
     throw new Error(message);
   }
   if (verbose) {
-    console.log('patch filePath=', filePath, ", result=\n", result);
+    console.log(strongSeparator);
+    console.log("success");
   }
   await fs.writeFile(filePath, result, "utf8");
   return output;

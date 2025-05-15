@@ -1,4 +1,9 @@
-import { patch } from "../diffcalculia-mcp"; import { promises as fs } from "fs";
+import {
+  patch,
+  colorizeDiff,
+  strongSeparator,
+  weakSeparator,
+} from "../diffcalculia-mcp"; import { promises as fs } from "fs";
 import path from "path";
 
 describe("patch", () => {
@@ -71,28 +76,40 @@ describe("patch", () => {
       const result = await patch(diff, outFixturePath, true);
 
       // Verify the combined log contains all expected information
-      expect(consoleSpy).toHaveBeenCalledTimes(3);
+      expect(consoleSpy).toHaveBeenCalledTimes(8);
       const filePathExpect = expect.stringMatching(/tests\/fixtures\/out.txt$/);
       expect(consoleSpy).toHaveBeenNthCalledWith(
         1,
         "\n\npatch filePath=",
-        filePathExpect,
-        ", patch=\n",
-        diff
+        filePathExpect
       );
       expect(consoleSpy).toHaveBeenNthCalledWith(
         2,
-        "patch filePath=",
-        filePathExpect,
-        ", output=\n",
-        diff
+        strongSeparator
       );
       expect(consoleSpy).toHaveBeenNthCalledWith(
         3,
-        "patch filePath=",
-        filePathExpect,
-        ", result=\n",
-        exp
+        "\npatch"
+      );
+      expect(consoleSpy).toHaveBeenNthCalledWith(
+        4,
+        weakSeparator
+      );
+      expect(consoleSpy).toHaveBeenNthCalledWith(
+        5,
+        colorizeDiff(diff)
+      );
+      expect(consoleSpy).toHaveBeenNthCalledWith(
+        6,
+        weakSeparator
+      );
+      expect(consoleSpy).toHaveBeenNthCalledWith(
+        7,
+        strongSeparator
+      );
+      expect(consoleSpy).toHaveBeenNthCalledWith(
+        8,
+        "success"
       );
 
       expect(result).not.toBe(false);
@@ -110,29 +127,57 @@ describe("patch", () => {
       const result = await patch(diff, outFixturePath, true);
 
       // Verify the combined log contains all expected information
-      expect(consoleSpy).toHaveBeenCalledTimes(3);
+      expect(consoleSpy).toHaveBeenCalledTimes(12);
       const filePathExpect = expect.stringMatching(/tests\/fixtures\/out.txt$/);
       expect(consoleSpy).toHaveBeenNthCalledWith(
         1,
         "\n\npatch filePath=",
-        filePathExpect,
-        ", patch=\n",
-        diff
+        filePathExpect
       );
-      const changeDiff = await fs.readFile(changeFixturePath, "utf8");
       expect(consoleSpy).toHaveBeenNthCalledWith(
         2,
-        "patch filePath=",
-        filePathExpect,
-        ", output=\n",
-        "Let me fix that for you\n"+changeDiff
+        strongSeparator
       );
       expect(consoleSpy).toHaveBeenNthCalledWith(
         3,
-        "patch filePath=",
-        filePathExpect,
-        ", result=\n",
-        exp
+        "\npatch"
+      );
+      expect(consoleSpy).toHaveBeenNthCalledWith(
+        4,
+        weakSeparator
+      );
+      expect(consoleSpy).toHaveBeenNthCalledWith(
+        5,
+        colorizeDiff(diff)
+      );
+      expect(consoleSpy).toHaveBeenNthCalledWith(
+        6,
+        weakSeparator
+      );
+      expect(consoleSpy).toHaveBeenNthCalledWith(
+        7,
+        "\noutput"
+      );
+      expect(consoleSpy).toHaveBeenNthCalledWith(
+        8,
+        weakSeparator
+      );
+      const changeDiff = await fs.readFile(changeFixturePath, "utf8");
+      expect(consoleSpy).toHaveBeenNthCalledWith(
+        9,
+        colorizeDiff("Let me fix that for you\n"+changeDiff)
+      );
+      expect(consoleSpy).toHaveBeenNthCalledWith(
+        10,
+        weakSeparator
+      );
+      expect(consoleSpy).toHaveBeenNthCalledWith(
+        11,
+        strongSeparator
+      );
+      expect(consoleSpy).toHaveBeenNthCalledWith(
+        12,
+        "success"
       );
 
       expect(result).not.toBe(false);
