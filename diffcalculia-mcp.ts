@@ -89,8 +89,13 @@ export async function readFileWithLines(
   filePath: string,
   lineNumber?: number,
   linesBefore?: number,
-  linesAfter?: number
+  linesAfter?: number,
+  verbose = false
 ): Promise<string> {
+  if (verbose) {
+    console.log("\n\nread_file filePath=", filePath, ", lineNumber=", lineNumber, ", linesBefore=", linesBefore, ", linesAfter=", linesAfter);
+    console.log(strongSeparator);
+  }
   const content = await fs.readFile(filePath, "utf8");
   if (content === "") {
     return "";
@@ -104,7 +109,12 @@ export async function readFileWithLines(
         ? `${String(i+1).padStart(maxDigits)}|${line}`
         : line
     );
-    return numberedLines.join('\n');
+    const result = numberedLines.join('\n');
+    if (verbose) {
+      console.log(result);
+      console.log(strongSeparator);
+    }
+    return result;
   }
 
   // Calculate line range
@@ -113,9 +123,14 @@ export async function readFileWithLines(
   const selectedLines = lines.slice(start, end);
 
   const maxDigits = String(end).length;
-  return selectedLines.map((line, i) =>
+  const result = selectedLines.map((line, i) =>
     `${String(start + i + 1).padStart(maxDigits)}|${line}`
   ).join('\n');
+  if (verbose) {
+    console.log(result);
+    console.log(strongSeparator);
+  }
+  return result;
 }
 
 const server = new McpServer({
@@ -156,6 +171,7 @@ Don't forget to remove the line number and the | character when crafting unified
     lines_after: z.string().optional()
   },
   async ({ path, line_number, lines_before, lines_after }) => {
+    const verbose = process.argv.includes('--verbose');
     let line_number_int;
     let lines_before_int;
     let lines_after_int;
@@ -166,7 +182,8 @@ Don't forget to remove the line number and the | character when crafting unified
       path,
       line_number_int,
       lines_before_int,
-      lines_after_int
+      lines_after_int,
+      verbose
     ) }] };
   }
 );
