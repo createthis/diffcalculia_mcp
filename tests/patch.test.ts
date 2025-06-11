@@ -67,6 +67,17 @@ describe("patch", () => {
     await expect(patch(diff, outFixturePath)).rejects.toThrow('Failed to apply patch');
   });
 
+  it("throws when last line starts on same column as plus characters", async () => {
+    const twoDescribesOneTestFixturePath = path.join(fixturesPath, "two_describes_one_test.txt");
+    const twoDescribesOneTestExpectedFixturePath = path.join(fixturesPath, "two_describes_one_test_expected.txt");
+    const changeIncorrectLeadingWhitespaceFixturePath = path.join(fixturesPath, "change_incorrect_leading_whitespace.diff");
+    const base = await fs.readFile(twoDescribesOneTestFixturePath, "utf8");
+    await fs.writeFile(outFixturePath, base, "utf8");
+    const diff = await fs.readFile(changeIncorrectLeadingWhitespaceFixturePath, "utf8");
+    const exp = await fs.readFile(twoDescribesOneTestExpectedFixturePath, "utf8");
+    await expect(patch(diff, outFixturePath)).rejects.toThrow('Unknown line 11 "});"');
+  });
+
   describe('when verbose is true', () => {
     it("applies a well-formed diff", async () => {
       const diff = await fs.readFile(changeFixturePath, "utf8");
@@ -184,6 +195,89 @@ describe("patch", () => {
       const out = await fs.readFile(outFixturePath, "utf8");
       expect(out).toBe(exp);
       consoleSpy.mockRestore();
+    });
+
+    it("throws when last line starts on same column as plus characters", async () => {
+      const twoDescribesOneTestFixturePath = path.join(fixturesPath, "two_describes_one_test.txt");
+      const twoDescribesOneTestExpectedFixturePath = path.join(fixturesPath, "two_describes_one_test_expected.txt");
+      const changeIncorrectLeadingWhitespaceFixturePath = path.join(fixturesPath, "change_incorrect_leading_whitespace.diff");
+      const changeFixedIncorrectLeadingWhitespaceFixturePath = path.join(fixturesPath, "change_fixed_incorrect_leading_whitespace.diff");
+      const base = await fs.readFile(twoDescribesOneTestFixturePath, "utf8");
+      await fs.writeFile(outFixturePath, base, "utf8");
+      const diff = await fs.readFile(changeIncorrectLeadingWhitespaceFixturePath, "utf8");
+      const exp = await fs.readFile(twoDescribesOneTestExpectedFixturePath, "utf8");
+      const consoleSpy = jest.spyOn(console, 'log')
+      .mockImplementation(() => {}); // Empty mock
+      await expect(patch(diff, outFixturePath, true)).rejects.toThrow('Unknown line 11 "});"');
+      const filePathExpect = outFixturePath;
+      expect(consoleSpy).toHaveBeenCalledTimes(16);
+      expect(consoleSpy).toHaveBeenNthCalledWith(
+        1,
+        "\n\npatch filePath=",
+        filePathExpect
+      );
+      expect(consoleSpy).toHaveBeenNthCalledWith(
+        2,
+        strongSeparator
+      );
+      expect(consoleSpy).toHaveBeenNthCalledWith(
+        3,
+        "\npatch"
+      );
+      expect(consoleSpy).toHaveBeenNthCalledWith(
+        4,
+        weakSeparator
+      );
+      expect(consoleSpy).toHaveBeenNthCalledWith(
+        5,
+        colorizeDiff(diff)
+      );
+      expect(consoleSpy).toHaveBeenNthCalledWith(
+        6,
+        weakSeparator
+      );
+      expect(consoleSpy).toHaveBeenNthCalledWith(
+        7,
+        "\noutput"
+      );
+      expect(consoleSpy).toHaveBeenNthCalledWith(
+        8,
+        weakSeparator
+      );
+      const changeDiff = await fs.readFile(changeFixedIncorrectLeadingWhitespaceFixturePath, "utf8");
+      expect(consoleSpy).toHaveBeenNthCalledWith(
+        9,
+        colorizeDiff("Let me fix that for you\n"+changeDiff)
+      );
+      expect(consoleSpy).toHaveBeenNthCalledWith(
+        10,
+        weakSeparator
+      );
+      expect(consoleSpy).toHaveBeenNthCalledWith(
+        11,
+        "\nresult"
+      );
+      expect(consoleSpy).toHaveBeenNthCalledWith(
+        12,
+        weakSeparator
+      );
+      expect(consoleSpy).toHaveBeenNthCalledWith(
+        13,
+        "message=",
+        "Unknown line 11 \"});\""
+      );
+      expect(consoleSpy).toHaveBeenNthCalledWith(
+        14,
+        weakSeparator
+      );
+      expect(consoleSpy).toHaveBeenNthCalledWith(
+        15,
+        strongSeparator
+      );
+      expect(consoleSpy).toHaveBeenNthCalledWith(
+        16,
+        "fail"
+      );
     });
   });
 });

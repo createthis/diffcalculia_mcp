@@ -1,0 +1,14 @@
+describe('Some Component', () => {
+  describe('stuff()', () => {
+    it('should do stuff', () => {
+      blah.stuff();
+    });
+  });
+
+  describe('other_stuff()', () => {
+    it('should do other stuff', () => {
+      blah.other_stuff();
+    });
+  });
+
+});

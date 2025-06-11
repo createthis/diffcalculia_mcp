@@ -1,0 +1,7 @@
+describe('Some Component', () => {
+  describe('stuff()', () => {
+    it('should do stuff', () => {
+      blah.stuff();
+    });
+  });
+});

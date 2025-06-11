@@ -1,0 +1,11 @@
+@@ -5,2 +5,9 @@
+    });
+  });
++
++  describe('other_stuff()', () => {
++    it('should do other stuff', () => {
++      blah.other_stuff();
++    });
++  });
++
+});

@@ -56,10 +56,26 @@ export async function patch(patch: string, filePath: string, verbose = false): P
   }
 
   const original = await fs.readFile(filePath, "utf8");
-  const result = applyPatch(original, fixed, {
-    autoConvertLineEndings: true,
-    compareLine,
-  });
+  let result;
+
+  try {
+    result = applyPatch(original, fixed, {
+      autoConvertLineEndings: true,
+      compareLine,
+    });
+  } catch (e) {
+    const message = e.message;
+    if (verbose) {
+      console.log("\nresult");
+      console.log(weakSeparator);
+      console.log("message=", message);
+      console.log(weakSeparator);
+      console.log(strongSeparator);
+      console.log("fail");
+    }
+    throw new Error(message);
+  }
+
   if (result === false) {
     const message = 'Failed to apply patch';
     if (verbose) {
