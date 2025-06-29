@@ -65,11 +65,21 @@ describe("readFileWithLines", () => {
   });
 
   it("throws error when lines_before or lines_after is provided without line_number", async () => {
+    // Test with non-zero
     await expect(readFileWithLines(SAMPLE_FILE, undefined, 1))
       .rejects
       .toThrow("Cannot specify lines_before or lines_after without line_number");
 
     await expect(readFileWithLines(SAMPLE_FILE, undefined, undefined, 1))
+      .rejects
+      .toThrow("Cannot specify lines_before or lines_after without line_number");
+
+    // Test with zero
+    await expect(readFileWithLines(SAMPLE_FILE, undefined, 0))
+      .rejects
+      .toThrow("Cannot specify lines_before or lines_after without line_number");
+
+    await expect(readFileWithLines(SAMPLE_FILE, undefined, undefined, 0))
       .rejects
       .toThrow("Cannot specify lines_before or lines_after without line_number");
   })
