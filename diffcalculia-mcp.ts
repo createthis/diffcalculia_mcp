@@ -112,6 +112,11 @@ export async function readFileWithLines(
     console.log("\n\nread_file filePath=", filePath, ", lineNumber=", lineNumber, ", linesBefore=", linesBefore, ", linesAfter=", linesAfter);
     console.log(strongSeparator);
   }
+
+  if (typeof lineNumber === 'undefined' && (typeof linesBefore !== 'undefined' || typeof linesAfter !== 'undefined')) {
+    throw new Error("Cannot specify lines_before or lines_after without line_number");
+  }
+
   const content = await fs.readFile(filePath, "utf8");
   if (content === "") {
     return "";
