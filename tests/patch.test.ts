@@ -78,6 +78,23 @@ describe("patch", () => {
     await expect(patch(diff, outFixturePath)).rejects.toThrow('Unknown line 11 "});"');
   });
 
+
+  it("apply patch with leading and trailing whitespace", async () => {
+    const originalPath = path.join(fixturesPath, "leading_and_trailing_whitespace/original.txt");
+    const patchPath = path.join(fixturesPath, "leading_and_trailing_whitespace/patch.diff");
+    const expectFixturePath = path.join(fixturesPath, "leading_and_trailing_whitespace/expected.txt");
+    const base = await fs.readFile(originalPath, "utf8");
+    await fs.writeFile(outFixturePath, base, "utf8");
+    const diff = await fs.readFile(patchPath, "utf8");
+
+    const exp = await fs.readFile(expectFixturePath, "utf8");
+    const result = await patch(diff, outFixturePath);
+    expect(result).not.toBe(false);
+    const out = await fs.readFile(outFixturePath, "utf8");
+    expect(out).toBe(exp);
+    expect(result).toBe(diff);
+  });
+
   describe('when verbose is true', () => {
     it("applies a well-formed diff", async () => {
       const diff = await fs.readFile(changeFixturePath, "utf8");
