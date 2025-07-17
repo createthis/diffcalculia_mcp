@@ -63,7 +63,7 @@ export async function patch(patch: string, filePath: string, verbose = false): P
       autoConvertLineEndings: true,
       compareLine,
     });
-  } catch (e) {
+  } catch (e: any) {
     const message = e.message;
     if (verbose) {
       console.log("\nresult");
@@ -161,10 +161,29 @@ const server = new McpServer({
 
 server.tool(
   "patch",
-  `This tool allows you to edit files. Give it a file path and a unified diff and it will edit the file for you.
-The output of this tool is the diff that was applied. If the diff was modified, it will contain "Let me fix that for you".
-This is your preferred file editing tool because it works well with long files and files that contain duplicate lines.
-The context feature of the unified diff format prevents unintentional changes and allows precision edits.`,
+  `Apply precise, context-aware code changes using unified diff format. This is your SAFEST choice for file editing when:
+- Making changes in large files where str_replace might accidentally match wrong locations
+- Editing files with duplicate code patterns or similar function names
+- Making multiple related changes across different parts of a file
+- Ensuring changes apply exactly where intended with line-by-line verification
+- Working with code that has similar patterns or repeated structures
+
+KEY ADVANTAGES over str_replace_editor:
+✓ Context-aware: Uses surrounding lines to ensure changes apply to correct location
+✓ Duplicate-safe: Won't accidentally modify wrong instances of similar code
+✓ Self-validating: Automatically checks and fixes patch format issues
+✓ Single operation: Make complex multi-line changes in one step instead of multiple str_replace calls
+✓ Visual feedback: Shows exactly what changed with line numbers and context
+
+The unified diff format includes 3 lines of context above/below changes, making it virtually impossible to apply changes to wrong locations. This prevents the common str_replace_editor pitfall of accidentally modifying unintended matches.
+
+Format: Provide the file path and a unified diff (like git diff output). The tool will validate, potentially auto-correct formatting issues, and apply the changes safely.
+
+Example when patch is BETTER than str_replace_editor:
+- Changing a specific function when multiple similar functions exist
+- Updating code in large files where line numbers help verify correct location
+- Making coordinated changes across multiple locations in one operation
+- Ensuring changes don't break syntax by showing surrounding context`,
   { diff: z.string(), path: z.string() },
   async ({ diff, path }) => {
     const verbose = process.argv.includes('--verbose');
@@ -184,7 +203,7 @@ Optionally specify line_number with lines_before/after.
 This is your preferred tool for viewing the content of files because it provides line numbers. Line 
 numbers are critical for crafting precision edits and unified diffs.
 
-Don't forget to remove the line number and the | character when crafting unified diffs!`,
+Pro tip: Use these line numbers to create precise patches with the 'patch' tool when dealing with duplicate code patterns or complex changes.`,
   { 
     path: z.string(),
     line_number: z.string().optional(),
