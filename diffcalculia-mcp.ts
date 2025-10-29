@@ -97,7 +97,7 @@ export async function patch(patch: string, filePath: string, verbose = false): P
 }
 
 export async function createFile(path: string, content: string): Promise<string> {
-  return fs.writeFile(path, content, { flag: "wx" }); // wx flag fails if exists
+  return fs.writeFile(path, content, { flag: "wx", mode: 0o644 }); // wx flag fails if exists
 }
 
 

@@ -18,6 +18,7 @@ This server is currently implemented using the StreamableHttp transport layer. I
 
 1. Install dependencies:
 ```bash
+nvm use # use the correct version of node - v20.x - newer versions may not work
 npm install
 ```
 
